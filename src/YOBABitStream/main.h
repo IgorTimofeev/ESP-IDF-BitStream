@@ -6,12 +6,17 @@
 namespace YOBA {
 	class ReadableBitStream {
 		public:
-			explicit ReadableBitStream(uint8_t* buffer, size_t bitIndex = 0) :
+			explicit ReadableBitStream(uint8_t* buffer, size_t byteIndex = 0, size_t bitIndex = 0) :
 				buffer(buffer),
+				byteIndex(byteIndex),
 				bitIndex(bitIndex),
 				byteBitIndex(bitIndex % 8)
 			{
 
+			}
+
+			uint8_t* getBuffer() const {
+				return buffer;
 			}
 
 			size_t getBitIndex() const {
@@ -19,11 +24,15 @@ namespace YOBA {
 			}
 
 			size_t getByteIndex() const {
-				return bitIndex / 8;
+				return byteIndex;
+			}
+
+			size_t getBytesRead() const {
+				return byteBitIndex == 0 ? byteIndex : byteIndex + 1;
 			}
 
 			bool readBool() {
-				const auto result = ((*buffer) >> byteBitIndex) & 0b1;
+				const auto result = (*(buffer + byteIndex) >> byteBitIndex) & 0b1;
 				nextBit();
 
 				return result;
@@ -41,8 +50,13 @@ namespace YOBA {
 				return readSignedNumber<int16_t>(bits);
 			}
 
+			uint32_t readUint32(uint8_t bits = 32) {
+				return readUnsignedNumber<uint32_t>(bits);
+			}
+
 		private:
 			uint8_t* buffer;
+			size_t byteIndex;
 			size_t bitIndex;
 			uint8_t byteBitIndex;
 
@@ -51,7 +65,7 @@ namespace YOBA {
 				byteBitIndex++;
 
 				if (byteBitIndex >= 8) {
-					buffer++;
+					byteIndex++;
 					byteBitIndex = 0;
 				}
 			}
@@ -61,7 +75,7 @@ namespace YOBA {
 				TNumber result = 0;
 
 				for (int i = 0; i < bits; ++i) {
-					result |= ((((*buffer) >> byteBitIndex) & 0b1) << i);
+					result |= (((*(buffer + byteIndex) >> byteBitIndex) & 0b1) << i);
 					nextBit();
 				}
 
@@ -74,12 +88,12 @@ namespace YOBA {
 				TNumber magnitude = 0;
 
 				for (int i = 0; i < bits - 1; ++i) {
-					magnitude |= ((((*buffer) >> byteBitIndex) & 0b1) << i);
+					magnitude |= (((*(buffer + byteIndex) >> byteBitIndex) & 0b1) << i);
 					nextBit();
 				}
 
 				// Sign
-				const auto sign = (((*buffer) >> byteBitIndex) & 0b1) == 1;
+				const auto sign = ((*(buffer + byteIndex) >> byteBitIndex) & 0b1) == 1;
 				nextBit();
 
 				return sign ? -magnitude : magnitude;

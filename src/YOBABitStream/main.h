@@ -6,7 +6,7 @@
 namespace YOBA {
 	class ReadableBitStream {
 		public:
-			explicit ReadableBitStream(uint8_t* buffer, size_t byteIndex = 0, size_t bitIndex = 0) :
+			explicit ReadableBitStream(const uint8_t* buffer, size_t byteIndex = 0, size_t bitIndex = 0) :
 				buffer(buffer),
 				byteIndex(byteIndex),
 				bitIndex(bitIndex),
@@ -15,7 +15,7 @@ namespace YOBA {
 
 			}
 
-			uint8_t* getBuffer() const {
+			const uint8_t* getBuffer() const {
 				return buffer;
 			}
 
@@ -55,7 +55,7 @@ namespace YOBA {
 			}
 
 		private:
-			uint8_t* buffer;
+			const uint8_t* buffer;
 			size_t byteIndex;
 			size_t bitIndex;
 			uint8_t byteBitIndex;

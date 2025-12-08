@@ -50,6 +50,10 @@ namespace YOBA {
 				return readSignedNumber<int16_t>(bits);
 			}
 
+			int32_t readInt32(uint8_t bits = 32) {
+				return readSignedNumber<int32_t>(bits);
+			}
+
 			uint32_t readUint32(uint8_t bits = 32) {
 				return readUnsignedNumber<uint32_t>(bits);
 			}

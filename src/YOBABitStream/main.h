@@ -4,82 +4,91 @@
 #include <algorithm>
 
 namespace YOBA {
-	class ReadableBitStream {
+	class BitStream {
 		public:
-			explicit ReadableBitStream(const uint8_t* buffer, size_t byteIndex = 0, size_t bitIndex = 0) :
-				buffer(buffer),
-				byteIndex(byteIndex),
-				bitIndex(bitIndex),
-				byteBitIndex(bitIndex % 8)
+			explicit BitStream(const uint8_t* buffer, size_t bitIndex = 0) :
+				_buffer(buffer)
 			{
-
+				setBitIndex(bitIndex);
 			}
 
-			const uint8_t* getBuffer() const {
-				return buffer;
+			inline const uint8_t* getBuffer() const {
+				return _buffer;
 			}
 
-			size_t getBitIndex() const {
-				return bitIndex;
+			inline size_t getBitIndex() const {
+				return _bitIndex;
 			}
 
-			size_t getByteIndex() const {
-				return byteIndex;
+			void setBitIndex(size_t value) {
+				_bitIndex = value;
+
+				updateByteIndicesFromBitIndex();
+			}
+
+			inline size_t getByteIndex() const {
+				return _byteIndex;
 			}
 
 			size_t getBytesRead() const {
-				return byteBitIndex == 0 ? byteIndex : byteIndex + 1;
+				return _byteBitIndex == 0 ? _byteIndex : _byteIndex + 1;
 			}
 
 			bool readBool() {
-				const auto result = (*(buffer + byteIndex) >> byteBitIndex) & 0b1;
+				const auto result = (*(_buffer + _byteIndex) >> _byteBitIndex) & 0b1;
 				nextBit();
 
 				return result;
 			}
 
 			uint8_t readUint8(uint8_t bits = 8) {
-				return readUnsignedNumber<uint8_t>(bits);
+				return readUnsigned<uint8_t>(bits);
 			}
 
 			uint16_t readUint16(uint8_t bits = 16) {
-				return readUnsignedNumber<uint16_t>(bits);
+				return readUnsigned<uint16_t>(bits);
 			}
 
 			int16_t readInt16(uint8_t bits = 16) {
-				return readSignedNumber<int16_t>(bits);
+				return readSigned<int16_t>(bits);
 			}
 
 			int32_t readInt32(uint8_t bits = 32) {
-				return readSignedNumber<int32_t>(bits);
+				return readSigned<int32_t>(bits);
 			}
 
 			uint32_t readUint32(uint8_t bits = 32) {
-				return readUnsignedNumber<uint32_t>(bits);
+				return readUnsigned<uint32_t>(bits);
 			}
 
 		private:
-			const uint8_t* buffer;
-			size_t byteIndex;
-			size_t bitIndex;
-			uint8_t byteBitIndex;
+			const uint8_t* _buffer;
+
+			size_t _bitIndex = 0;
+			size_t _byteIndex = 0;
+			uint8_t _byteBitIndex = 0;
+
+			void updateByteIndicesFromBitIndex() {
+				_byteIndex = _bitIndex / 8;
+				_byteBitIndex = _bitIndex % 8;
+			}
 
 			void nextBit() {
-				bitIndex++;
-				byteBitIndex++;
+				_bitIndex++;
+				_byteBitIndex++;
 
-				if (byteBitIndex >= 8) {
-					byteIndex++;
-					byteBitIndex = 0;
+				if (_byteBitIndex >= 8) {
+					_byteIndex++;
+					_byteBitIndex = 0;
 				}
 			}
 
 			template<typename TNumber>
-			TNumber readUnsignedNumber(uint8_t bits) {
+			TNumber readUnsigned(uint8_t bits) {
 				TNumber result = 0;
 
 				for (int i = 0; i < bits; ++i) {
-					result |= (((*(buffer + byteIndex) >> byteBitIndex) & 0b1) << i);
+					result |= (((*(_buffer + _byteIndex) >> _byteBitIndex) & 0b1) << i);
 					nextBit();
 				}
 
@@ -87,17 +96,17 @@ namespace YOBA {
 			}
 
 			template<typename TNumber>
-			TNumber readSignedNumber(uint8_t bits) {
+			TNumber readSigned(uint8_t bits) {
 				// Magnitude
 				TNumber magnitude = 0;
 
 				for (int i = 0; i < bits - 1; ++i) {
-					magnitude |= (((*(buffer + byteIndex) >> byteBitIndex) & 0b1) << i);
+					magnitude |= (((*(_buffer + _byteIndex) >> _byteBitIndex) & 0b1) << i);
 					nextBit();
 				}
 
 				// Sign
-				const auto sign = ((*(buffer + byteIndex) >> byteBitIndex) & 0b1) == 1;
+				const auto sign = ((*(_buffer + _byteIndex) >> _byteBitIndex) & 0b1) == 1;
 				nextBit();
 
 				return sign ? -magnitude : magnitude;

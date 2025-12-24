@@ -60,6 +60,14 @@ namespace YOBA {
 			uint32_t readUint32(uint8_t bits = 32) {
 				return readUnsigned<uint32_t>(bits);
 			}
+			
+			float readFloat(uint8_t bits = 32) {
+				auto u32 = readUint32(bits);
+				auto u8Ptr = reinterpret_cast<uint8_t*>(&u32);
+				auto fPtr = reinterpret_cast<float*>(u8Ptr);
+				
+				return *fPtr;
+			}
 
 		private:
 			const uint8_t* _buffer;

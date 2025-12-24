@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <algorithm>
+#include <bit>
 
 namespace YOBA {
 	class BitStream {
@@ -62,9 +63,7 @@ namespace YOBA {
 			}
 			
 			float readFloat(uint8_t bits = 32) {
-				auto u32 = readUint32(bits);
-				
-				return *reinterpret_cast<float*>(reinterpret_cast<uint8_t*>(&u32));
+				return std::bit_cast<float>(readUint32(bits));
 			}
 			
 			void writeUint8(uint8_t value, uint8_t bits = 8) {
@@ -80,7 +79,7 @@ namespace YOBA {
 			}
 			
 			void writeFloat(float value, uint8_t bits = 32) {
-				writeUint32(*reinterpret_cast<uint32_t*>(reinterpret_cast<uint8_t*>(&value)), bits);
+				writeUint32(std::bit_cast<uint32_t>(value), bits);
 			}
 
 		private:

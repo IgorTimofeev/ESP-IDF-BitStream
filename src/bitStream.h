@@ -74,8 +74,16 @@ namespace YOBA {
 				writeUnsigned<uint16_t>(value, bits);
 			}
 			
+			void writeInt16(int16_t value, uint8_t bits = 16) {
+				writeSigned<int16_t>(value, bits);
+			}
+			
 			void writeUint32(uint32_t value, uint8_t bits = 32) {
 				writeUnsigned<uint32_t>(value, bits);
+			}
+			
+			void writeInt32(int32_t value, uint8_t bits = 32) {
+				writeSigned<int32_t>(value, bits);
 			}
 			
 			void writeFloat(float value, uint8_t bits = 32) {
@@ -154,11 +162,22 @@ namespace YOBA {
 				}
 			}
 			
-			template<typename TNumber>
+			template<std::unsigned_integral TNumber>
 			void writeUnsigned(TNumber value, uint8_t bits) {
 				for (uint8_t i = 0; i < bits; ++i) {
 					writeBit(((value >> i) & 0b1) == 1);
 				}
+			}
+			
+			template<std::signed_integral TNumber>
+			void writeSigned(TNumber value, uint8_t bits) {
+				// Magnitude
+				for (uint8_t i = 0; i < bits - 1; ++i) {
+					writeBit(((value >> i) & 0b1) == 1);
+				}
+				
+				// Sign
+				writeBit(value < 0);
 			}
 	};
 }

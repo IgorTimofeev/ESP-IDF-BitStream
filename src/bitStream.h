@@ -95,6 +95,13 @@ namespace YOBA {
 				_byteIndex++;
 				_byteBitIndex = 0;
 			}
+			
+			void finishByte() {
+				if (_byteBitIndex == 0)
+					return;
+				
+				nextByte();
+			}
 
 		private:
 			uint8_t* _buffer;

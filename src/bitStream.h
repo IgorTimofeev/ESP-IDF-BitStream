@@ -7,27 +7,27 @@
 namespace YOBA {
 	class BitStream {
 		public:
-			explicit BitStream(uint8_t* buffer, size_t bitIndex = 0) :
+			explicit BitStream(uint8_t* buffer, const size_t bitIndex = 0) :
 				_buffer(buffer)
 			{
 				setBitIndex(bitIndex);
 			}
-			
-			inline uint8_t* getBuffer() const {
+
+			uint8_t* getBuffer() const {
 				return _buffer;
 			}
-			
-			inline size_t getBitIndex() const {
+
+			size_t getBitIndex() const {
 				return _bitIndex;
 			}
 			
-			void setBitIndex(size_t value) {
+			void setBitIndex(const size_t value) {
 				_bitIndex = value;
 				
 				updateByteIndicesFromBitIndex();
 			}
-			
-			inline size_t getByteIndex() const {
+
+			size_t getByteIndex() const {
 				return _byteIndex;
 			}
 			
@@ -42,63 +42,63 @@ namespace YOBA {
 				return result;
 			}
 			
-			uint8_t readUint8(uint8_t bits = 8) {
+			uint8_t readUint8(const uint8_t bits = 8) {
 				return readUnsigned<uint8_t>(bits);
 			}
 			
-			int16_t readInt8(uint8_t bits = 8) {
+			int16_t readInt8(const uint8_t bits = 8) {
 				return readSigned<int8_t, uint8_t>(bits);
 			}
 			
-			uint16_t readUint16(uint8_t bits = 16) {
+			uint16_t readUint16(const uint8_t bits = 16) {
 				return readUnsigned<uint16_t>(bits);
 			}
 			
-			int16_t readInt16(uint8_t bits = 16) {
+			int16_t readInt16(const uint8_t bits = 16) {
 				return readSigned<int16_t, uint16_t>(bits);
 			}
 			
-			int32_t readInt32(uint8_t bits = 32) {
+			int32_t readInt32(const uint8_t bits = 32) {
 				return readSigned<int32_t, uint32_t>(bits);
 			}
 			
-			uint32_t readUint32(uint8_t bits = 32) {
+			uint32_t readUint32(const uint8_t bits = 32) {
 				return readUnsigned<uint32_t>(bits);
 			}
 			
-			float readFloat(uint8_t bits = 32) {
+			float readFloat(const uint8_t bits = 32) {
 				return std::bit_cast<float>(readUint32(bits));
 			}
 			
-			void writeBool(bool value) {
+			void writeBool(const bool value) {
 				writeBit(value);
 			}
 			
-			void writeUint8(uint8_t value, uint8_t bits = 8) {
+			void writeUint8(const uint8_t value, const uint8_t bits = 8) {
 				writeUnsigned<uint8_t>(value, bits);
 			}
 			
-			void writeInt8(int8_t value, uint8_t bits = 8) {
+			void writeInt8(const int8_t value, const uint8_t bits = 8) {
 				writeSigned<int8_t, uint8_t>(value, bits);
 			}
 			
-			void writeUint16(uint16_t value, uint8_t bits = 16) {
+			void writeUint16(const uint16_t value, const uint8_t bits = 16) {
 				writeUnsigned<uint16_t>(value, bits);
 			}
 			
-			void writeInt16(int16_t value, uint8_t bits = 16) {
+			void writeInt16(const int16_t value, const uint8_t bits = 16) {
 				writeSigned<int16_t, uint16_t>(value, bits);
 			}
 			
-			void writeUint32(uint32_t value, uint8_t bits = 32) {
+			void writeUint32(const uint32_t value, const uint8_t bits = 32) {
 				writeUnsigned<uint32_t>(value, bits);
 			}
 			
-			void writeInt32(int32_t value, uint8_t bits = 32) {
+			void writeInt32(const int32_t value, const uint8_t bits = 32) {
 				writeSigned<int32_t, uint32_t>(value, bits);
 			}
 			
-			void writeFloat(float value, uint8_t bits = 32) {
+			void writeFloat(const float value, const uint8_t bits = 32) {
 				writeUint32(std::bit_cast<uint32_t>(value), bits);
 			}
 			
@@ -138,7 +138,7 @@ namespace YOBA {
 			}
 			
 			template<typename TNumber>
-			TNumber readUnsigned(uint8_t bits) {
+			TNumber readUnsigned(const uint8_t bits) {
 				TNumber result = 0;
 				
 				for (int i = 0; i < bits; ++i) {
@@ -150,7 +150,7 @@ namespace YOBA {
 			}
 			
 			template<std::signed_integral TSigned, std::unsigned_integral TUnsigned>
-			TSigned readSigned(uint8_t bits) {
+			TSigned readSigned(const uint8_t bits) {
 				// Magnitude
 				TUnsigned magnitude = 0;
 				
@@ -166,7 +166,7 @@ namespace YOBA {
 				return sign ? -static_cast<TSigned>(magnitude) : static_cast<TSigned>(magnitude);
 			}
 			
-			void writeBit(bool value) {
+			void writeBit(const bool value) {
 				_buffer[_byteIndex] =
 					value
 					? static_cast<uint8_t>(_buffer[_byteIndex] | (1 << _byteBitIndex))
@@ -176,14 +176,14 @@ namespace YOBA {
 			}
 			
 			template<std::unsigned_integral TNumber>
-			void writeUnsigned(TNumber value, uint8_t bits) {
+			void writeUnsigned(TNumber value, const uint8_t bits) {
 				for (uint8_t i = 0; i < bits; ++i) {
 					writeBit(((value >> i) & 0b1) == 1);
 				}
 			}
 			
 			template<std::signed_integral TSigned, std::unsigned_integral TUnsigned>
-			void writeSigned(TSigned value, uint8_t bits) {
+			void writeSigned(TSigned value, const uint8_t bits) {
 				const auto unsignedValue = static_cast<TUnsigned>(std::abs(value));
 				
 				// Magnitude
